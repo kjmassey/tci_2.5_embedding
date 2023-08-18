@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://public.tableau.com/javascripts/api/tableau.embedding.3.latest.js"
+      type="module"
+    ></script>
+    <script
+      src="linefuncs.js"
+      type="text/javascript"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="mapfuncs.js"
+      type="text/javascript"
+      crossorigin="anonymous"
+    ></script>
+
+    <title>Hello, world!</title>
+
+    <style>
+      .ban-div > div.card {
+        flex-basis: 30%;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      style="display: flex; flex-wrap: nowrap"
+      class="w-100 justify-content-center px-4"
+    >
+      <div class="row">
+        <div class="col justify-content-center mx-2" id="lineCol">
+          <div class="row d-flex justify-content-center">
+            <div class="card-header my-4 w-100 bg-dark text-white">
+              <h1>Profit by Month</h1>
+            </div>
+          </div>
+          <div class="row d-flex justify-content-center ban-div">
+            <div class="card mx-2 mb-2">
+              <div class="card-header bg-info text-white">Highest Value</div>
+              <div class="card-body" id="maxCardBody">
+                <button onclick="getMaxOrMinValue('max')">Get Max</button>
+              </div>
+            </div>
+            <div class="card mx-2 mb-2">
+              <div class="card-header bg-info text-white">Lowest Value</div>
+              <div class="card-body" id="minCardBody">
+                <button onclick="getMaxOrMinValue('min')">Get Min</button>
+              </div>
+            </div>
+            <div class="card mx-2 mb-2">
+              <div class="card-header bg-info text-white">Date Range</div>
+              <div class="card-body" id="dateRangeDiv">
+                <button onclick="getDateRange()">Get Date Range</button>
+              </div>
+            </div>
+            <div class="card mx-2 mb-2">
+              <div class="card-header bg-info text-white"># of Marks</div>
+              <div class="card-body" id="marksCountDiv">
+                <button onclick="getMarksCount()">Get Marks</button>
+              </div>
+            </div>
+            <div class="card mx-2 mb-2">
+              <div class="card-header bg-info text-white"># of Rows</div>
+              <div class="card-body" id="rowsCountDiv">
+                <button onclick="getRowsCount()">Get Rows</button>
+              </div>
+            </div>
+            <div class="card mx-2 mb-2">
+              <div class="card-header bg-info text-white">
+                Filters Available
+              </div>
+              <div class="card-body" id="filtersBodyDiv">
+                <button onclick="getFilters()">Get Filters</button>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col mx-2">
+              <div class="card w-100 mx-2 mb-2">
+                <div class="card-header bg-info text-white">
+                  Filter Controls
+                </div>
+                <div class="card-body d-flex justify-content-around">
+                  <div>
+                    <label for="regionFilterSelect">Region: </label>
+                    <select
+                      id="regionFilterSelect"
+                      name="regionFilterSelect"
+                      onchange="applyFilterFromDropdown('Region', this)"
+                    ></select>
+                  </div>
+                  <div>
+                    <label for="yearFilterSelect">Year: </label>
+                    <select
+                      id="yearFilterSelect"
+                      name="yearFilterSelect"
+                      onchange="applyFilterFromDropdown('YEAR(Order Date)', this)"
+                    ></select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="d-flex justify-content-center w-100 mx-4">
+              <tableau-viz
+                src="https://10ax.online.tableau.com/t/kjmdev797388/views/EmbeddingWorkbook/Line"
+                device="desktop"
+                hide-tabs
+                toolbar="hidden"
+                id="lineViz"
+              >
+              </tableau-viz>
+            </div>
+          </div>
+        </div>
+        <div class="col justify-content-center mx-2" id="mapCol">
+          <div class="row d-flex justify-content-center">
+            <div class="card-header my-4 w-100 bg-dark text-white">
+              <h1>Metric Map (Parameter)</h1>
+            </div>
+          </div>
+          <div class="row d-flex justify-content-center ban-div">
+            <div class="card mx-2 mb-2">
+              <div class="card-header bg-info text-white">Metric</div>
+              <div class="card-body" id="currentMetricDiv">
+                <button onclick="getParamCurrentValue('Dot Size')">
+                  Get Params
+                </button>
+              </div>
+            </div>
+            <div class="card mx-2 mb-2">
+              <div class="card-header bg-info text-white">Top City/State</div>
+              <div class="card-body" id="topStateDiv">
+                <button onclick="getTopOrBottomState('top','Dot Size')">
+                  Get Best
+                </button>
+              </div>
+            </div>
+            <div class="card mx-2 mb-2">
+              <div class="card-header bg-info text-white">
+                Bottom City/State
+              </div>
+              <div class="card-body" id="bottomStateDiv">
+                <button onclick="getTopOrBottomState('bottom', 'Dot Size')">
+                  Get Worst
+                </button>
+              </div>
+            </div>
+            <div class="card mx-2 mb-2">
+              <div class="card-header bg-info text-white"># of Marks</div>
+              <div class="card-body" id="mapMarksCountDiv">
+                <button onclick="getMapMarksCount()">Get Marks</button>
+              </div>
+            </div>
+            <div class="card mx-2 mb-2">
+              <div class="card-header bg-info text-white"># of Rows</div>
+              <div class="card-body" id="mapRowsCountDiv">
+                <button onclick="getMapRowsCount()">Get Rows</button>
+              </div>
+            </div>
+            <div class="card mx-2 mb-2">
+              <div class="card-header bg-info text-white">
+                Parameters Available
+              </div>
+              <div class="card-body" id="paramNamesDiv">
+                <button onclick="getParamDisplayNames()">
+                  Get Param Names
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col mx-2">
+              <div class="card w-100 mx-2 mb-2">
+                <div class="card-header bg-info text-white">
+                  Parameter Controls
+                </div>
+                <div class="card-body d-flex justify-content-around">
+                  <div>
+                    <label for="paramSelect">Dot Size: </label>
+                    <select
+                      id="paramSelect"
+                      name="paramSelect"
+                      onchange="updateParameterFromDropDown('Dot Size', this)"
+                    ></select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="d-flex justify-content-center w-100 mx-4">
+              <tableau-viz
+                src="https://10ax.online.tableau.com/t/kjmdev797388/views/EmbeddingWorkbook/Map"
+                device="desktop"
+                hide-tabs
+                toolbar="hidden"
+                id="mapViz"
+              >
+              </tableau-viz>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div
+      id="overlay"
+      style="
+        background: rgba(0, 0, 0, 0.6);
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      "
+    >
+      <div
+        class="spinner-border text-primary"
+        role="status"
+        style="height: 64px; width: 64px"
+      >
+        <span class="sr-only">Loading...</span>
+      </div>
+    </div>
+
+    <script type="module">
+      import { TableauEventType } from "https://public.tableau.com/javascripts/api/tableau.embedding.3.latest.js";
+
+      // Get the viz object from the HTML web component
+      const mapViz = document.getElementById("mapViz");
+      const lineViz = document.getElementById("lineViz");
+
+      // Wait for the viz to become interactive
+      await new Promise((resolve, reject) => {
+        // Add an event listener to verify the viz becomes interactive
+        mapViz.addEventListener(TableauEventType.FirstInteractive, () => {
+          console.log("Map is interactive!");
+          resolve();
+          prepMapViz();
+        });
+
+        lineViz.addEventListener(TableauEventType.FirstInteractive, () => {
+          console.log("Line chart is interactive!");
+          resolve();
+          prepLineViz();
+        });
+      });
+    </script>
+    <script>
+      function toggleDiv(divId) {
+        const divToToggle = document.getElementById(divId);
+        console.log(divToToggle);
+
+        console.log(divToToggle.style.display);
+
+        switch (divToToggle.style.display) {
+          case "none":
+            divToToggle.style.display = "inline-block";
+
+            break;
+
+          case "inline-block":
+            divToToggle.style.display = "none";
+
+            break;
+        }
+      }
+    </script>
+  </body>
+</html>

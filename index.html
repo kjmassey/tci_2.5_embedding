@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script
+      src="https://public.tableau.com/javascripts/api/tableau.embedding.3.latest.js"
+      type="module"
+    ></script>
+  </head>
+  <body>
+    <div id="vizFilterHeader" style="display: none">abc</div>
+    <div id="vizFilterValues" style="display: none">abc</div>
+    <div>
+      <tableau-viz
+        src="https://10ax.online.tableau.com/t/kjmdev797388/views/EmbeddingWorkbook/Line"
+        device="desktop"
+        hide-tabs
+        toolbar="hidden"
+      >
+      </tableau-viz>
+    </div>
+    <div>
+      <button onclick="getFilters()">Get Filters</button>
+      <button onclick="getData()">Get Data</button>
+      <button onclick="getMaxOrMinValue('max')">Get Highest Value</button>
+      <button onclick="getMaxOrMinValue('min')">Get Lowest Value</button>
+      <button onclick="clearRegionFilter('Region')">Clear Region Filter</button>
+      <button onclick="getAllUniqueFilterValues('Region')">
+        Get <em>ALL</em> region values
+      </button>
+      <select
+        id="regionSelect"
+        onchange="applyFilterFromDropdown('Region',this)"
+      ></select>
+    </div>
+
+    <script type="module">
+      import { TableauEventType } from "https://public.tableau.com/javascripts/api/tableau.embedding.3.latest.js";
+
+      // Get the viz object from the HTML web component
+      const viz = document.querySelector("tableau-viz");
+
+      // Wait for the viz to become interactive
+      await new Promise((resolve, reject) => {
+        // Add an event listener to verify the viz becomes interactive
+        viz.addEventListener(TableauEventType.FirstInteractive, () => {
+          console.log("Viz is interactive!");
+          resolve();
+        });
+      });
+    </script>
+    <script>
+      const viz = document.querySelector("tableau-viz");
+      const regionSelect = document.getElementById("regionSelect");
+
+      async function getFilters() {
+        const ws = viz.workbook.activeSheet;
+        const sheetFilters = await ws.getFiltersAsync();
+        console.log("--- SHEET FILTERS: ", sheetFilters);
+
+        const filterNames = sheetFilters.map((e) => e.fieldName);
+
+        console.log("This worksheet has the following filters:");
+        console.log(filterNames.join(", "));
+
+        const headerDiv = document.getElementById("vizFilterHeader");
+        headerDiv.innerHTML = `This viz has the following filters applied: ${filterNames.join(
+          ", "
+        )}`;
+        headerDiv.style.display = "block";
+
+        var filterValString = "";
+        const valsDiv = document.getElementById("vizFilterValues");
+
+        sheetFilters.forEach((e) => {
+          filterValString += `Filter <b>${e.fieldName}</b>: ${e.appliedValues
+            .map((x) => x.value)
+            .join(", ")} <br>`;
+        });
+
+        valsDiv.innerHTML = filterValString;
+        valsDiv.style.display = "block";
+      }
+
+      async function getData() {
+        const ws = viz.workbook.activeSheet;
+
+        const wsData = await ws.getUnderlyingDataAsync();
+        console.log("ROWS FROM UNDERLYING DATA: ", wsData.data.length);
+
+        const wsSummaryData = await ws.getSummaryDataAsync();
+        console.log("MARKS FROM SUMMARY DATA: ", wsSummaryData.data.length);
+
+        var allRegionVals = wsData.data.map((e) => e[1].value);
+        var uniqueRegions = [...new Set(allRegionVals)];
+
+        console.log(uniqueRegions);
+      }
+
+      async function clearRegionFilter(filterName) {
+        const ws = viz.workbook.activeSheet;
+
+        const clearFilter = await ws.clearFilterAsync(filterName);
+      }
+
+      async function getAllUniqueFilterValues(filterName) {
+        const ws = viz.workbook.activeSheet;
+
+        const sheetFilters = await ws.getFiltersAsync();
+
+        var existingFilterVals;
+
+        sheetFilters.forEach((e) => {
+          if (e.fieldName == filterName) {
+            existingFilterVals = e.appliedValues.map((x) => x.value);
+          }
+        });
+
+        console.log("EXISTING FILTER VALS: ", existingFilterVals);
+        const clearFilter = await ws.clearFilterAsync(filterName);
+
+        const wsSummaryData = await ws.getSummaryDataAsync();
+        console.log("SUMMARY DATA:");
+        console.log(wsSummaryData);
+
+        var allRegionVals = wsSummaryData.data.map((e) => e[1].value);
+        var uniqueRegions = [...new Set(allRegionVals)];
+
+        console.log("ALL UNIQUE REGIONS: ", uniqueRegions);
+
+        var allOpt = document.createElement("option");
+
+        allOpt.value = "(All)";
+        allOpt.innerHTML = "(All)";
+        regionSelect.appendChild(allOpt);
+
+        uniqueRegions.forEach((e) => {
+          var opt = document.createElement("option");
+          opt.value = e;
+          opt.innerHTML = e;
+          regionSelect.appendChild(opt);
+        });
+
+        const reapplyFilters = ws.applyFilterAsync(
+          filterName,
+          existingFilterVals,
+          "replace"
+        );
+      }
+
+      async function applyFilterFromDropdown(filterName, event) {
+        const ws = viz.workbook.activeSheet;
+
+        var applyFilter;
+
+        if (event.value == "(All)") {
+          applyFilter = ws.clearFilterAsync(filterName);
+        } else {
+          applyFilter = ws.applyFilterAsync(
+            filterName,
+            [event.value],
+            "replace"
+          );
+        }
+      }
+
+      async function getMaxOrMinValue(valType) {
+        const ws = viz.workbook.activeSheet;
+        const wsSummaryData = await ws.getSummaryDataAsync();
+
+        console.log("SUMMARY DATA: ");
+        console.log(wsSummaryData);
+
+        var getVal;
+
+        switch (valType) {
+          case "max":
+            getVal = wsSummaryData.data.reduce((p, c) =>
+              p[2].value > c[2].value ? p : c
+            );
+
+            break;
+
+          case "min":
+            getVal = wsSummaryData.data.reduce((p, c) =>
+              p[2].value < c[2].value ? p : c
+            );
+
+            break;
+        }
+
+        alert(
+          `The ${valType} value is \n\nDate: ${getVal[0].value}\nRegion: ${getVal[1].value}\nValue: ${getVal[2].value}`
+        );
+      }
+    </script>
+  </body>
+</html>
