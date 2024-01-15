@@ -24,9 +24,6 @@
     <div>
       <button onclick="getFilters()">Get Filters</button>
       <button onclick="getData()">Get Data</button>
-      <button onclick="getMaxOrMinValue('max')">Get Highest Value</button>
-      <button onclick="getMaxOrMinValue('min')">Get Lowest Value</button>
-      <button onclick="clearRegionFilter('Region')">Clear Region Filter</button>
       <button onclick="getAllUniqueFilterValues('Region')">
         Get <em>ALL</em> region values
       </button>
@@ -34,6 +31,9 @@
         id="regionSelect"
         onchange="applyFilterFromDropdown('Region',this)"
       ></select>
+      <button onclick="getMaxOrMinValue('max')">Get Highest Value</button>
+      <button onclick="getMaxOrMinValue('min')">Get Lowest Value</button>
+      <button onclick="clearRegionFilter('Region')">Clear Region Filter</button>
     </div>
 
     <script type="module">
@@ -96,7 +96,7 @@
         var allRegionVals = wsData.data.map((e) => e[1].value);
         var uniqueRegions = [...new Set(allRegionVals)];
 
-        console.log(uniqueRegions);
+        console.log("FILTER OPTIONS: ", uniqueRegions);
       }
 
       async function clearRegionFilter(filterName) {
